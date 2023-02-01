@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    df = pd.read_csv('data.csv')
+    df = pd.read_csv('static/data.csv')
     data = df.values
     return render_template('index.html', data=data)
 

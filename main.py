@@ -1,6 +1,8 @@
+from random import randint
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
@@ -16,12 +18,34 @@ from datetime import datetime
 import sys
 import os
 import re
+import time
+from plyer import notification
+
+
+def notify(df):
+    data = df.to_dict(orient="records")
+    msg = str(data[0])[1:-1].replace(":", " ==> ")
+    notification.notify(
+			title = "New Match Found",
+			message=msg[:250] + "....",
+			timeout=2
+    )
+    time.sleep(5)
+
+def actions(element):
+    worker = ActionChains(driver)
+    worker.click(element)
+    worker.perform()
+
+def delay():
+    time.sleep(randint(2, 3))
 
 
 def _driver():
+    global options
     s = Service(ChromeDriverManager().install())
 
-    user = "USER_1"
+    user = "USER_2"
 
     dirr = os.path.abspath(os.curdir).rsplit("\\", 1)[0] + f"\\{user}"
 
@@ -29,22 +53,59 @@ def _driver():
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features")
-    # options.add_argument("-headless")
+    # options.add_argument("--headless")
+    options.add_extension('static/extension_1_3_1_0.crx')
     options.add_argument("excludeSwitches")
     options.add_experimental_option("excludeSwitches", ['enable-automation'])
     options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--remote-debugging-port=9222")
-    options.add_argument(
-        r"user-data-dir=%s" % dirr)
+    options.add_argument(r"user-data-dir=%s" % dirr)
 
     driver = webdriver.Chrome(service=s, options=options)
     driver.maximize_window()
-    driver.implicitly_wait(5)
 
     return driver
 
+def solver():
+    delayTime = 2
+    try:
+        outerIframe = find(By.XPATH, '//iframe[@title="reCAPTCHA"]')
+        outerIframe.click()
 
-filename = "data.csv"
+        iframes = driver.find_elements(By.TAG_NAME, 'iframe')
+        print("Total Frames: %s" % str(len(iframes)))
+        for index in range(len(iframes)):
+            print("Current Frame: %s\n" % str(index))
+            driver.switch_to.default_content()
+            iframe = finds(By.TAG_NAME, 'iframe')[index]
+            driver.switch_to.frame(iframe)
+            driver.implicitly_wait(delayTime)
+            try:
+                solve = find(By.XPATH, '//div[@class="button-holder help-button-holder"]')
+                actions(solve)
+                print("Solved")
+                time.sleep(8)
+                driver.switch_to.default_content()
+                driver.switch_to.default_content()
+                driver.switch_to.default_content()
+                break
+            except Exception as e:
+                print("Error 1 " + str(e).split("Stacktrace:")[0])
+        while True:
+            try:
+                ok = WebDriverWait(driver, 30).until(
+                            EC.visibility_of_element_located((By.XPATH, '//button[text()="Continue"]'))
+                        )
+                actions(ok)
+                break
+            except Exception as e:
+                delay()
+    except Exception as e:
+        print("\033[91m" + e + "\033[0m")
+
+
+
+filename = "static/data.csv"
+records = "static/records.csv"
 
 def prettir(txt):
     try:
@@ -57,6 +118,22 @@ def prettir(txt):
 
 
 def save_to_file(df, keep):
+    try:
+        df2 = pd.read_csv(records)
+        nw = df.values.tolist()
+        od = df2.values.tolist()
+        if not nw in od:
+            notify(df)
+    except FileNotFoundError:
+        pass
+    # keep records
+    try:
+        pd.read_csv(records)
+        df.to_csv(records, index=False, mode="a",
+                    header=False, encoding='utf-8-sig')
+    except FileNotFoundError:
+        df.to_csv(records, index=False, encoding='utf-8-sig')
+    # recent data
     if keep == True:
         try:
             pd.read_csv(filename)
@@ -80,11 +157,14 @@ def login():
         pass
     try:
         username = find(By.XPATH, '//input[@name="UserName"]')
+        username.send_keys(Keys.CONTROL + 'a' + Keys.DELETE)
         username.send_keys("A6050")
         password = find(By.XPATH, '//input[@name="Password"]')
+        password.send_keys(Keys.CONTROL + 'a' + Keys.DELETE)
         password.send_keys("123" + "\n")
         time.sleep(3)
         print("login successful")
+        solver()
     except:
         pass
 
@@ -117,14 +197,13 @@ def get_data(row, keep):
 
         p = {
             "DATE PLACED": prettir(date_placed),
-            # "Scraped Date": datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
-            # "TICKET#": prettir(_idx(ticket)),
-            # "WAGER TYPE": wager_type,
-            # "GAME DATE": game_date,
+            "TICKET#": prettir(_idx(ticket)),
+            "WAGER TYPE": wager_type,
+            "GAME DATE": game_date,
             "SPORT": sport,
             "DESCRIPTION": description,
-            # "STATUS": prettir(_idx(status)),
-            # "CASHOUT": prettir(_idx(cashout)),
+            "STATUS": prettir(_idx(status)),
+            "CASHOUT": prettir(_idx(cashout)),
             "RISK/WIN":prettir(_idx(risk_win)),
             "TOTAL": prettir(_idx(total))
         }
@@ -143,8 +222,11 @@ def Scraper(link):
     find = driver.find_element
     finds = driver.find_elements
     driver.get(link)
+    driver.maximize_window()
+    # options.add_argument("--headless")
     driver.implicitly_wait(10)
     login()
+    time.sleep(30)
     open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
     open_bets.click()
     time.sleep(2)
@@ -159,5 +241,9 @@ def Scraper(link):
         keep = False
         time.sleep(60)
         driver.refresh()
+        try:
+            open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
+        except:
+           solver()
 
 Scraper("https://1bettor.com/Common/Dashboard")
