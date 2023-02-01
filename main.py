@@ -97,12 +97,8 @@ def _idx(x):
 
 
 def get_data(row, keep):
-    print("row:::")
-    print(row)
     os.system('color')
     ticket = row.xpath('.//td[@data-title="TRANSACTION:"]/text()')
-    print("ticket::")
-    print(ticket)
     if ticket:
         date_placed = " ".join(row.xpath('.//td[@data-title="DATE PLACED:"]/text()'))
         wager_type= _idx(row.xpath('.//td[@data-title="DESCRIPTION:"]/span[1]/text()'))
@@ -161,7 +157,7 @@ def Scraper(link):
             get_data(row, keep)
             keep = True
         keep = False
-        time.sleep(15)
+        time.sleep(60)
         driver.refresh()
 
 Scraper("https://1bettor.com/Common/Dashboard")

@@ -1,2 +1,0 @@
-# BettingDataAutoScraper
-Python + Selenium
