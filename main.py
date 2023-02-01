@@ -117,14 +117,14 @@ def get_data(row, keep):
 
         p = {
             "DATE PLACED": prettir(date_placed),
-            "Scraped Date": datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
-            "TICKET#": prettir(_idx(ticket)),
-            "WAGER TYPE": wager_type,
-            "GAME DATE": game_date,
+            # "Scraped Date": datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
+            # "TICKET#": prettir(_idx(ticket)),
+            # "WAGER TYPE": wager_type,
+            # "GAME DATE": game_date,
             "SPORT": sport,
             "DESCRIPTION": description,
-            "STATUS": prettir(_idx(status)),
-            "CASHOUT": prettir(_idx(cashout)),
+            # "STATUS": prettir(_idx(status)),
+            # "CASHOUT": prettir(_idx(cashout)),
             "RISK/WIN":prettir(_idx(risk_win)),
             "TOTAL": prettir(_idx(total))
         }
