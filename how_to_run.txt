@@ -1,0 +1,5 @@
+1. pip install -r requirements.txt
+
+2. Scrape data: run python main.py
+
+3. View data: run python server.py
