@@ -21,13 +21,18 @@ import re
 import time
 from plyer import notification
 
+sitedomain = "1betvegas.com"
+username = "A6050"
 
 def notify(df):
     data = df.to_dict(orient="records")
-    msg = str(data[0])[1:-1].replace(":", " ==> ")
+    pprint(data)
+    # msg = str(data[0])[1:-1].replace(":", " ==> ")
+    msg = data[0]['DESCRIPTION'] + ", " + data[0]['DATE PLACED'] + ", " + data[0]['RISK/WIN'].split("/")[0]
+    pprint(msg)
     notification.notify(
-			title = "New Match Found",
-			message=msg[:250] + "....",
+			title = sitedomain + " " + username,
+			message=msg,
 			timeout=2
     )
     time.sleep(5)
@@ -45,7 +50,7 @@ def _driver():
     global options
     s = Service(ChromeDriverManager().install())
 
-    user = "USER_2"
+    user = "USER_3"
 
     dirr = os.path.abspath(os.curdir).rsplit("\\", 1)[0] + f"\\{user}"
 
@@ -246,4 +251,4 @@ def Scraper(link):
         except:
            solver()
 
-Scraper("https://1bettor.com/Common/Dashboard")
+Scraper("https://1betvegas.com/Common/Dashboard")
