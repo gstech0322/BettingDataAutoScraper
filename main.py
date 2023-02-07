@@ -27,7 +27,6 @@ username = "A6050"
 def notify(df):
     data = df.to_dict(orient="records")
     pprint(data)
-    # msg = str(data[0])[1:-1].replace(":", " ==> ")
     msg = data[0]['DESCRIPTION'] + ", " + data[0]['DATE PLACED'] + ", " + data[0]['RISK/WIN'].split("/")[0]
     pprint(msg)
     notification.notify(
@@ -244,7 +243,7 @@ def Scraper(link):
             get_data(row, keep)
             keep = True
         keep = False
-        time.sleep(60)
+        time.sleep(10)
         driver.refresh()
         try:
             open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
