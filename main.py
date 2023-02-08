@@ -26,9 +26,7 @@ username = "A6050"
 
 def notify(df):
     data = df.to_dict(orient="records")
-    pprint(data)
     msg = data[0]['DESCRIPTION'] + ", " + data[0]['DATE PLACED'] + ", " + data[0]['RISK/WIN'].split("/")[0]
-    pprint(msg)
     notification.notify(
 			title = sitedomain + " " + username,
 			message=msg,
@@ -43,7 +41,6 @@ def actions(element):
 
 def delay():
     time.sleep(randint(2, 3))
-
 
 def _driver():
     global options
@@ -106,8 +103,6 @@ def solver():
     except Exception as e:
         print("\033[91m" + e + "\033[0m")
 
-
-
 filename = "static/data.csv"
 records = "static/records.csv"
 
@@ -120,13 +115,12 @@ def prettir(txt):
         txt = txt
     return txt
 
-
 def save_to_file(df, keep):
     try:
         df2 = pd.read_csv(records)
         nw = df.values.tolist()
         od = df2.values.tolist()
-        if not nw in od:
+        if not nw[0] in od:
             notify(df)
     except FileNotFoundError:
         pass
@@ -172,21 +166,17 @@ def login():
     except:
         pass
 
-
 def _idx(x):
     try:
         return x[0]
     except IndexError:
         return None
 
-
 def get_data(row, keep):
     os.system('color')
     ticket = row.xpath('.//td[@data-title="TRANSACTION:"]/text()')
     if ticket:
         date_placed = " ".join(row.xpath('.//td[@data-title="DATE PLACED:"]/text()'))
-        wager_type= _idx(row.xpath('.//td[@data-title="DESCRIPTION:"]/span[1]/text()'))
-        game_date = _idx(row.xpath('.//td[@data-title="DESCRIPTION:"]/span[2]/text()'))
         wd = prettir(" ".join([x for x in row.xpath('.//td[@data-title="DESCRIPTION:"]/text()') if x]))
         if wd:
             sport = wd.rsplit(" - ", 1)[-1].strip()
@@ -194,22 +184,14 @@ def get_data(row, keep):
         else:
             sport = None
             description = None
-        status = row.xpath('.//td[@data-title="STATUS:"]/text()')
-        cashout = row.xpath('.//td[@data-title="CASHOUT:"]/text()')
         risk_win = row.xpath('.//td[@data-title="RISK/WIN:"]/span/text()')
-        total = row.xpath('//tr/td[@class="font-weight-bold border-0 text-center"]/text()')
 
         p = {
             "DATE PLACED": prettir(date_placed),
             "TICKET#": prettir(_idx(ticket)),
-            "WAGER TYPE": wager_type,
-            "GAME DATE": game_date,
             "SPORT": sport,
             "DESCRIPTION": description,
-            "STATUS": prettir(_idx(status)),
-            "CASHOUT": prettir(_idx(cashout)),
             "RISK/WIN":prettir(_idx(risk_win)),
-            "TOTAL": prettir(_idx(total))
         }
 
         print("\033[92m")
@@ -217,8 +199,6 @@ def get_data(row, keep):
         print("\033[0m")
         df = pd.DataFrame([p])
         save_to_file(df, keep)
-   
-
 
 def Scraper(link):
     global driver, find, finds
@@ -230,7 +210,7 @@ def Scraper(link):
     # options.add_argument("--headless")
     driver.implicitly_wait(10)
     login()
-    time.sleep(30)
+    time.sleep(15)
     open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
     open_bets.click()
     time.sleep(2)
@@ -247,7 +227,10 @@ def Scraper(link):
         driver.refresh()
         try:
             open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
+            open_bets.click()
         except:
-           solver()
+            solver()
+            open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
+            open_bets.click()
 
 Scraper("https://1betvegas.com/Common/Dashboard")
