@@ -122,15 +122,15 @@ def save_to_file(df, keep):
         od = df2.values.tolist()
         if not nw[0] in od:
             notify(df)
+            # keep records
+            try:
+                pd.read_csv(records)
+                df.to_csv(records, index=False, mode="a",
+                            header=False, encoding='utf-8-sig')
+            except FileNotFoundError:
+                df.to_csv(records, index=False, encoding='utf-8-sig')
     except FileNotFoundError:
         pass
-    # keep records
-    try:
-        pd.read_csv(records)
-        df.to_csv(records, index=False, mode="a",
-                    header=False, encoding='utf-8-sig')
-    except FileNotFoundError:
-        df.to_csv(records, index=False, encoding='utf-8-sig')
     # recent data
     if keep == True:
         try:
@@ -188,7 +188,7 @@ def get_data(row, keep):
 
         p = {
             "DATE PLACED": prettir(date_placed),
-            "TICKET#": prettir(_idx(ticket)),
+            "TICKET#": int(prettir(_idx(ticket))),
             "SPORT": sport,
             "DESCRIPTION": description,
             "RISK/WIN":prettir(_idx(risk_win)),
