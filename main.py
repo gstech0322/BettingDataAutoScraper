@@ -161,7 +161,7 @@ def login():
         password.send_keys(Keys.CONTROL + 'a' + Keys.DELETE)
         password.send_keys("123" + "\n")
         time.sleep(3)
-        print("login successful")
+        print("login successfully")
         solver()
     except:
         pass
@@ -193,10 +193,6 @@ def get_data(row, keep):
             "DESCRIPTION": description,
             "RISK/WIN":prettir(_idx(risk_win)),
         }
-
-        print("\033[92m")
-        pprint(p)
-        print("\033[0m")
         df = pd.DataFrame([p])
         save_to_file(df, keep)
 
@@ -210,7 +206,7 @@ def Scraper(link):
     # options.add_argument("--headless")
     driver.implicitly_wait(10)
     login()
-    time.sleep(15)
+    time.sleep(5)
     open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
     open_bets.click()
     time.sleep(2)
@@ -218,18 +214,29 @@ def Scraper(link):
     while True:
         tree = html.fromstring(html=driver.page_source)
         xpath = '//tbody[@class="open-betsbody rounded"]/tr[@class="border-0 selected-row" or @class="border-0"]'
-        rows =tree.xpath(xpath)
+        rows = tree.xpath(xpath)
+        print("rows:", rows)
         for row in rows:
             get_data(row, keep)
             keep = True
         keep = False
-        time.sleep(10)
+        time.sleep(5)
         driver.refresh()
         try:
+            driver.get(link)
+            driver.maximize_window()
+            driver.implicitly_wait(10)
+            login()
+            time.sleep(5)
             open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
             open_bets.click()
         except:
+            driver.get(link)
+            driver.maximize_window()
+            driver.implicitly_wait(10)
+            login()
             solver()
+            time.sleep(5)
             open_bets = find(By.XPATH, '//li/a[@class="nav-link sub-menu-link2"][text() ="OPEN BETS"]')
             open_bets.click()
 
